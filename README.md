@@ -41,7 +41,7 @@ cd VolatilityLab
 ```bash
 cd backend
 python -m venv venv
-source venv/bin/activate  # On Windows: .\venv\Scripts\activate (RUn this ---> Set-ExecutionPolicy Restricted -Scope CurrentUsert) If previous command didnt work
+source venv/bin/activate  # On Windows: .\venv\Scripts\activate (RUn this ---> Set-ExecutionPolicy Restricted -Scope CurrentUser) If previous command didnt work
 pip install -r requirements.txt
 ```
 

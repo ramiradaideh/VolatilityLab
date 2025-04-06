@@ -69,6 +69,32 @@ class BacktestService:
 
         return signals
 
+    def calculate_rsi(self, prices: pd.Series, period: int = 14) -> pd.Series:
+        """
+        Calculate RSI (Relative Strength Index)
+        
+        Args:
+            prices: Series of closing prices
+            period: Number of periods for calculation (default: 14)
+            
+        Returns:
+            Series of RSI values
+        """
+        # Calculate price changes
+        delta = prices.diff()
+        
+        # Separate gains and losses
+        gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
+        loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
+        
+        # Calculate Relative Strength (RS)
+        rs = gain / loss
+        
+        # Calculate RSI
+        rsi = 100 - (100 / (1 + rs))
+        
+        return rsi
+
     def rsi_strategy(
         self,
         df: pd.DataFrame,
@@ -81,15 +107,13 @@ class BacktestService:
         overbought = parameters.get('overbought', 70)
         oversold = parameters.get('oversold', 30)
 
-        delta = df['close'].diff()
-        gain = (delta.where(delta > 0, 0)).rolling(window=period).mean()
-        loss = (-delta.where(delta < 0, 0)).rolling(window=period).mean()
-        rs = gain / loss
-        rsi = 100 - (100 / (1 + rs))
+        # Calculate RSI
+        rsi = self.calculate_rsi(df['close'], period)
 
+        # Generate signals
         signals = pd.Series(0, index=df.index)
-        signals[rsi < oversold] = 1
-        signals[rsi > overbought] = -1
+        signals[rsi < oversold] = 1    # Buy when RSI is oversold
+        signals[rsi > overbought] = -1  # Sell when RSI is overbought
 
         return signals
 

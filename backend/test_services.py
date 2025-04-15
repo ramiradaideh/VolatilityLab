@@ -1,6 +1,10 @@
 from datetime import datetime, timedelta
 from app.services.polygon_service import PolygonService
 from app.services.backtest_service import BacktestService
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+from typing import Dict, Any
 
 def test_services():
     # Initialize services
@@ -10,7 +14,7 @@ def test_services():
     # Test parameters
     symbol = "AAPL"  # Apple stock
     end_date = datetime.now()
-    start_date = end_date - timedelta(days=365)  # 1 year of data
+    start_date = end_date - timedelta(days=365 * 2)  # 2 years of data
 
     print(f"Testing Polygon.io service for {symbol}...")
     # Get stock data
@@ -23,9 +27,9 @@ def test_services():
     strategies = [
         ("momentum_regression", {
             "short_sma": 5,
-            "mid_sma": 252,
-            "long_sma": 1260,
-            "regression_window": 252
+            "mid_sma": 20,
+            "long_sma": 60,
+            "regression_window": 30
         })
     ]
 

@@ -2,12 +2,14 @@ import pandas as pd
 import numpy as np
 from typing import Dict, Any, List
 from datetime import datetime
+import statsmodels.api as sm
 
 class BacktestService:
     def __init__(self):
         self.strategies = {
             "simple_moving_average": self.simple_moving_average_strategy,
             "rsi_strategy": self.rsi_strategy,
+            "momentum_regression": self.momentum_regression_strategy
             # Add more strategies here
         }
 
@@ -121,6 +123,7 @@ class BacktestService:
         """
         Calculate the Sharpe ratio
         """
+        print(returns)
         if len(returns) < 2:
             return 0.0
         return np.sqrt(252) * returns.mean() / returns.std()
@@ -132,4 +135,43 @@ class BacktestService:
         cumulative = (1 + returns).cumprod()
         rolling_max = cumulative.expanding().max()
         drawdowns = cumulative / rolling_max - 1
-        return drawdowns.min() 
+        return drawdowns.min()
+
+    def momentum_regression_strategy(
+    self,
+        df: pd.DataFrame,
+        parameters: Dict[str, Any]
+    ) -> pd.Series:
+        short_sma = parameters.get("short_sma", 5)
+        mid_sma = parameters.get("mid_sma", 252)
+        long_sma = parameters.get("long_sma", 1260)
+        regression_window = parameters.get("regression_window", 252)
+
+        df['SMA_short'] = df['close'].rolling(window=short_sma).mean()
+        df['SMA_mid'] = df['close'].rolling(window=mid_sma).mean()
+        df['SMA_long'] = df['close'].rolling(window=long_sma).mean()
+
+        df['return'] = df['close'].pct_change()
+        
+        weights = pd.Series(index=df.index, dtype=float)
+
+        for i in range(regression_window, len(df)):
+            window_df = df.iloc[i - regression_window:i]
+            X = window_df[['SMA_short', 'SMA_mid', 'SMA_long']].dropna()
+            y = window_df['return'].loc[X.index]
+
+            if len(X) == 0 or len(y) == 0:
+                weights.iloc[i] = 0
+                continue
+
+            X = sm.add_constant(X)
+            model = sm.OLS(y, X).fit()
+            alpha = model.params['const']
+            sigma_squared = np.var(model.resid)
+
+            gamma = alpha / sigma_squared if sigma_squared != 0 else 0
+            weights.iloc[i] = gamma
+
+        weights = weights.fillna(0)
+        return weights
+    

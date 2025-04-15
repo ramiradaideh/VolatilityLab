@@ -20,26 +20,28 @@ def test_services():
     if data:
         print("\nTesting backtest service...")
         # Test both strategies
-        strategies = ["simple_moving_average", "rsi_strategy"]
-        
-        for strategy in strategies:
-            print(f"\nRunning {strategy}...")
-            results = backtest_service.run_backtest(
-                data,
-                strategy,
-                parameters={
-                    "short_window": 20,
-                    "long_window": 50,
-                    "period": 14,
-                    "overbought": 70,
-                    "oversold": 30
-                }
-            )
-            
-            print(f"Results for {strategy}:")
-            print(f"Total Return: {results['total_return']:.2%}")
-            print(f"Sharpe Ratio: {results['sharpe_ratio']:.2f}")
-            print(f"Max Drawdown: {results['max_drawdown']:.2%}")
+    strategies = [
+        ("momentum_regression", {
+            "short_sma": 5,
+            "mid_sma": 252,
+            "long_sma": 1260,
+            "regression_window": 252
+        })
+    ]
+
+    for strategy_name, params in strategies:
+        print(f"\nRunning {strategy_name}...")
+        results = backtest_service.run_backtest(
+            data,
+            strategy_name,
+            parameters=params
+        )
+
+        print(f"Results for {strategy_name}:")
+        print(f"Total Return: {results['total_return']:.2%}")
+        print(f"Sharpe Ratio: {results['sharpe_ratio']:.2f}")
+        print(f"Max Drawdown: {results['max_drawdown']:.2%}")
+
 
 if __name__ == "__main__":
     test_services() 

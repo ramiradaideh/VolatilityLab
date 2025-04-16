@@ -138,40 +138,57 @@ class BacktestService:
         return drawdowns.min()
 
     def momentum_regression_strategy(
-    self,
+        self,
         df: pd.DataFrame,
         parameters: Dict[str, Any]
     ) -> pd.Series:
+        # Use more reasonable default values given the data size
         short_sma = parameters.get("short_sma", 5)
-        mid_sma = parameters.get("mid_sma", 252)
-        long_sma = parameters.get("long_sma", 1260)
-        regression_window = parameters.get("regression_window", 252)
+        mid_sma = parameters.get("mid_sma", 20)  # Changed from 252
+        long_sma = parameters.get("long_sma", 60)  # Changed from 1260
+        regression_window = parameters.get("regression_window", 30)  # Changed from 252
 
+        # Calculate technical indicators
         df['SMA_short'] = df['close'].rolling(window=short_sma).mean()
         df['SMA_mid'] = df['close'].rolling(window=mid_sma).mean()
         df['SMA_long'] = df['close'].rolling(window=long_sma).mean()
-
         df['return'] = df['close'].pct_change()
         
         weights = pd.Series(index=df.index, dtype=float)
 
         for i in range(regression_window, len(df)):
-            window_df = df.iloc[i - regression_window:i]
-            X = window_df[['SMA_short', 'SMA_mid', 'SMA_long']].dropna()
-            y = window_df['return'].loc[X.index]
+            try:
+                window_df = df.iloc[i - regression_window:i]
+                X = window_df[['SMA_short', 'SMA_mid', 'SMA_long']].dropna()
+                y = window_df['return'].loc[X.index]
 
-            if len(X) == 0 or len(y) == 0:
+                if len(X) < regression_window // 2:  # Ensure enough data points
+                    weights.iloc[i] = 0
+                    continue
+
+                # Add constant and fit model with error handling
+                X = sm.add_constant(X)
+                if X.empty or y.empty:
+                    weights.iloc[i] = 0
+                    continue
+
+                model = sm.OLS(y, X).fit()
+                
+                # Check if 'const' is in the parameters
+                if 'const' not in model.params:
+                    weights.iloc[i] = 0
+                    continue
+                    
+                alpha = model.params['const']
+                sigma_squared = np.var(model.resid) if len(model.resid) > 0 else 1e-6
+
+                # Add safety checks and limits
+                gamma = np.clip(alpha / (sigma_squared + 1e-6), -1, 1)
+                weights.iloc[i] = gamma
+
+            except Exception as e:
+                print(f"Error at index {i}: {str(e)}")
                 weights.iloc[i] = 0
-                continue
 
-            X = sm.add_constant(X)
-            model = sm.OLS(y, X).fit()
-            alpha = model.params['const']
-            sigma_squared = np.var(model.resid)
-
-            gamma = alpha / sigma_squared if sigma_squared != 0 else 0
-            weights.iloc[i] = gamma
-
-        weights = weights.fillna(0)
-        return weights
+        return weights.fillna(0)
     

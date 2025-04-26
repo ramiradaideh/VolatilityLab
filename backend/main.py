@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from app.api.backtest import router as backtest_router
+
 import os
 
 # Load environment variables
@@ -11,6 +13,8 @@ app = FastAPI(
     description="API for quantum trading strategy backtesting",
     version="1.0.0"
 )
+# This will include the backtest router where we define our endpoints
+app.include_router(backtest_router, prefix="/backtest")
 
 # Configure CORS
 app.add_middleware(

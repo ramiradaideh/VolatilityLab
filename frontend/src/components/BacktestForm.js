@@ -27,7 +27,7 @@ function BacktestForm() {
     // Fetch available strategies
     const fetchStrategies = async () => {
       try {
-        const response = await axios.get(`${API_URL}/strategies`);
+        const response = await axios.get(`${API_URL}/backtest/strategies`);
         setStrategies(response.data.strategies);
       } catch (error) {
         console.error('Error fetching strategies:', error);

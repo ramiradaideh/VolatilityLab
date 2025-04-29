@@ -2,6 +2,9 @@ from polygon import RESTClient
 from datetime import datetime, timedelta
 import os
 from typing import List, Dict, Any
+import logging
+
+logger = logging.getLogger(__name__)
 
 class PolygonService:
     def __init__(self):
@@ -15,6 +18,7 @@ class PolygonService:
         Fetch historical stock data from Polygon.io
         """
         try:
+            logger.info(f"Fetching data for {symbol} from {start_date} to {end_date}")
             aggs = []
             for a in self.client.list_aggs(
                 symbol,
@@ -34,9 +38,12 @@ class PolygonService:
                     "vwap": a.vwap,
                     "transactions": a.transactions
                 })
+            logger.info(f"Retrieved {len(aggs)} data points for {symbol}")
+            if len(aggs) == 0:
+                logger.warning(f"No data returned for {symbol} between {start_date} and {end_date}")
             return aggs
         except Exception as e:
-            print(f"Error fetching data for {symbol}: {str(e)}")
+            logger.error(f"Error fetching data for {symbol}: {str(e)}")
             return []
 
     def get_option_chain(self, symbol: str) -> List[Dict[str, Any]]:

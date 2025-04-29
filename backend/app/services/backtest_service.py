@@ -19,6 +19,21 @@ class BacktestService:
             "rsi_strategy": self.rsi_strategy,
             "momentum_regression": self.momentum_regression_strategy,
         }
+        
+        # Add display names for each strategy
+        self.strategy_display_names = {
+            "simple_moving_average": "Simple Moving Average",
+            "rsi_strategy": "RSI Strategy",
+            "momentum_regression": "Momentum Regression",
+        }
+
+    def get_strategy_display_name(self, strategy_name: str) -> str:
+        """Get the display name for a strategy"""
+        return self.strategy_display_names.get(strategy_name, strategy_name)
+
+    def get_all_strategies(self) -> Dict[str, str]:
+        """Get all strategies with their display names"""
+        return {name: self.get_strategy_display_name(name) for name in self.strategies.keys()}
 
     def run_backtest(self, data: List[Dict[str, Any]], strategy_name: str, parameters: Dict[str, Any]) -> Dict[str, Any]:
         logger.info(f"Running backtest for strategy: {strategy_name} with parameters: {parameters}")
@@ -27,19 +42,33 @@ class BacktestService:
             logger.error(f"Strategy {strategy_name} not found")
             raise ValueError(f"Strategy {strategy_name} not found")
 
+        if not data:
+            logger.error("No data provided for backtest")
+            raise ValueError("No data provided for backtest")
+
         df = pd.DataFrame(data)
+        logger.info(f"Created DataFrame with {len(df)} rows")
+        
         df['timestamp'] = pd.to_datetime(df['timestamp'], unit='ms')
         df.set_index('timestamp', inplace=True)
 
         logger.debug("Initial DataFrame:\n%s", df.head())
 
-        if df.empty or df['close'].isnull().any():
-            logger.error("Input data is empty or contains invalid values")
-            raise ValueError("Input data is empty or contains invalid values")
+        if df.empty:
+            logger.error("DataFrame is empty after processing")
+            raise ValueError("No data available for the specified date range")
+
+        if df['close'].isnull().any():
+            logger.error("Data contains null values in close prices")
+            raise ValueError("Invalid data: contains null values in close prices")
 
         try:
             strategy = self.strategies[strategy_name]
             signals = strategy(df.copy(), parameters)
+            
+            if signals is None or len(signals) == 0:
+                logger.error("Strategy returned no signals")
+                raise ValueError("Strategy failed to generate signals")
 
             df['returns'] = df['close'].pct_change()
             df['strategy_returns'] = df['returns'] * signals
@@ -58,17 +87,12 @@ class BacktestService:
                 "max_drawdown": self.safe_float(max_drawdown),
                 "signals": signals.fillna(0).astype(float).tolist(),
                 "equity_curve": (1 + df['strategy_returns']).cumprod().fillna(1).astype(float).tolist(),
+                "strategy_display_name": self.get_strategy_display_name(strategy_name),
             }
 
         except Exception as e:
             logger.exception("Error during backtest execution")
-            return {
-                "total_return": 0.0,
-                "sharpe_ratio": 0.0,
-                "max_drawdown": 0.0,
-                "signals": [],
-                "equity_curve": [],
-            }
+            raise ValueError(f"Backtest execution failed: {str(e)}")
 
     def safe_float(self, val: float) -> float:
         try:
@@ -83,6 +107,10 @@ class BacktestService:
             long = parameters.get('long_window', 50)
             logger.info(f"Running SMA strategy: short={short}, long={long}")
 
+            if len(df) < long:
+                logger.error(f"Not enough data points for SMA strategy. Need at least {long} points, got {len(df)}")
+                raise ValueError(f"Not enough data points for SMA strategy. Need at least {long} points")
+
             df['SMA_short'] = df['close'].rolling(window=short).mean()
             df['SMA_long'] = df['close'].rolling(window=long).mean()
 
@@ -94,7 +122,7 @@ class BacktestService:
             return signals.fillna(0)
         except Exception as e:
             logger.exception("SMA strategy failed")
-            return pd.Series(0, index=df.index)
+            raise ValueError(f"SMA strategy failed: {str(e)}")
 
     def calculate_rsi(self, prices: pd.Series, period: int = 14) -> pd.Series:
         delta = prices.diff()

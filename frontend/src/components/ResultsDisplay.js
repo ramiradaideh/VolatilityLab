@@ -28,6 +28,7 @@ function ResultsDisplay({ results }) {
   }
 
   const metrics = [
+    { label: 'Strategy', value: results.strategy_display_name },
     { label: 'Total Return', value: `${(results.total_return * 100).toFixed(2)}%` },
     { label: 'Sharpe Ratio', value: results.sharpe_ratio.toFixed(2) },
     { label: 'Max Drawdown', value: `${(results.max_drawdown * 100).toFixed(2)}%` },
@@ -42,7 +43,7 @@ function ResultsDisplay({ results }) {
   return (
     <Paper elevation={3} sx={{ p: 3 }}>
       <Typography variant="h5" gutterBottom>
-        Backtest Results
+        Backtest Results for {results.symbol}
       </Typography>
       
       <Grid container spacing={3}>

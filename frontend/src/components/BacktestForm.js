@@ -23,7 +23,8 @@ import { DatePicker } from '@mui/x-date-pickers';
 import axios from 'axios';
 import strategyDescriptions from '../data/strategyDescriptions';
 
-const API_URL = 'http://localhost:8000';
+// Use environment variable for API URL, fallback to localhost for development
+const API_URL = process.env.REACT_APP_API_URL ;
 
 function BacktestForm() {
   const [symbol, setSymbol] = useState('');

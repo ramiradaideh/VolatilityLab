@@ -19,7 +19,10 @@ app.include_router(backtest_router, prefix="/backtest")
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React frontend URL
+    allow_origins=[
+        "http://localhost:3000",  # Local React frontend URL
+        "https://frontend-falling-wave-9184.fly.dev",  # Deployed frontend URL
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

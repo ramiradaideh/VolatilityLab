@@ -86,7 +86,7 @@ function BacktestPage() {
             src="/icon.png"
             alt="VolatilityLab"
             sx={{
-              height: '50px',
+              height: '40px',
               width: 'auto',
               filter: 'drop-shadow(0 0 10px rgba(0, 255, 157, 0.3))',
             }}

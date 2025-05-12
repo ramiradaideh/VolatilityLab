@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Container, Typography, Box } from '@mui/material';
+import { Button, Container, Box } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 const StyledButton = styled(Button)(({ theme }) => ({
@@ -11,9 +11,10 @@ const StyledButton = styled(Button)(({ theme }) => ({
   height: '60px',
   borderRadius: '8px',
   textTransform: 'none',
-  '&.Mui-disabled': {
-    backgroundColor: theme.palette.grey[300],
-    color: theme.palette.grey[600],
+  backgroundColor: theme.palette.primary.main,
+  color: theme.palette.background.default,
+  '&:hover': {
+    backgroundColor: theme.palette.primary.dark,
   },
 }));
 
@@ -25,10 +26,11 @@ const ComingSoonButton = styled(Button)(({ theme }) => ({
   height: '60px',
   borderRadius: '8px',
   textTransform: 'none',
-  backgroundColor: theme.palette.grey[800],
-  color: theme.palette.grey[500],
+  backgroundColor: theme.palette.secondary.main,
+  color: theme.palette.text.secondary,
+  border: `1px solid ${theme.palette.primary.main}`,
   '&:hover': {
-    backgroundColor: theme.palette.grey[700],
+    backgroundColor: theme.palette.secondary.dark,
   },
   position: 'relative',
   '&::before': {
@@ -38,10 +40,11 @@ const ComingSoonButton = styled(Button)(({ theme }) => ({
     left: '50%',
     transform: 'translateX(-50%)',
     fontSize: '0.8rem',
-    color: theme.palette.grey[500],
-    backgroundColor: theme.palette.grey[900],
+    color: theme.palette.primary.main,
+    backgroundColor: theme.palette.background.default,
     padding: '2px 8px',
     borderRadius: '4px',
+    border: `1px solid ${theme.palette.primary.main}`,
   },
 }));
 
@@ -49,24 +52,48 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <Typography variant="h3" component="h1" gutterBottom sx={{ mb: 4 }}>
-          VolatilityLab
-        </Typography>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        background: 'linear-gradient(180deg, #000000 0%, #0a0a0a 100%)',
+        position: 'relative',
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'radial-gradient(circle at center, rgba(0, 255, 157, 0.1) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        },
+      }}
+    >
+      <Container maxWidth="sm" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Box
+          component="img"
+          src="/icon.png"
+          alt="VolatilityLab"
+          sx={{
+            width: '250px',
+            height: 'auto',
+            mb: 6,
+            filter: 'drop-shadow(0 0 10px rgba(0, 255, 157, 0.3))',
+            transition: 'transform 0.3s ease-in-out',
+            '&:hover': {
+              transform: 'scale(1.05)',
+            },
+          }}
+        />
         
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, width: '100%', maxWidth: '400px' }}>
           <StyledButton
             variant="contained"
-            color="primary"
             onClick={() => navigate('/backtest')}
           >
             Backtesting
@@ -76,8 +103,8 @@ const HomePage = () => {
             Deployment
           </ComingSoonButton>
         </Box>
-      </Box>
-    </Container>
+      </Container>
+    </Box>
   );
 };
 

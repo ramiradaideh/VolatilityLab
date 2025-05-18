@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
   IconButton,
   Card,
   CardContent,
-  Grid,
 } from '@mui/material';
 import {
   ArrowBackIosNew as LeftArrowIcon,
@@ -14,8 +13,8 @@ import {
 import { styled } from '@mui/material/styles';
 
 const StyledCard = styled(Card)(({ theme }) => ({
-  width: '315px',
-  height: '474px',
+  width: '280px',
+  height: '320px',
   backgroundColor: theme.palette.grey[900],
   borderRadius: '12px',
   transition: 'transform 0.2s, box-shadow 0.2s',
@@ -27,37 +26,47 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const StrategySelector = ({ onStrategySelect }) => {
-  const [strategies, setStrategies] = useState([]);
-  const [currentPage, setCurrentPage] = useState(0);
-  const strategiesPerPage = 2;
-
-  useEffect(() => {
-    // Fetch strategies from the API
-    const fetchStrategies = async () => {
-      try {
-        const response = await fetch('/api/strategies');
-        const data = await response.json();
-        setStrategies(data);
-      } catch (error) {
-        console.error('Error fetching strategies:', error);
-      }
-    };
-
-    fetchStrategies();
-  }, []);
-
-  const totalPages = Math.ceil(strategies.length / strategiesPerPage);
-  const currentStrategies = strategies.slice(
-    currentPage * strategiesPerPage,
-    (currentPage + 1) * strategiesPerPage
-  );
+  const [strategies] = useState([
+    { 
+      id: 1, 
+      name: 'Simple Moving Average',
+      description: 'A trend-following strategy that generates signals based on the crossing of short and long-term moving averages.'
+    },
+    { 
+      id: 2, 
+      name: 'RSI Strategy',
+      description: 'A mean-reversion strategy that identifies overbought and oversold conditions using the Relative Strength Index.'
+    },
+    { 
+      id: 3, 
+      name: 'Momentum Regression',
+      description: 'An advanced momentum strategy that uses multiple timeframes and regression analysis for signal generation.'
+    },
+  ]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [direction, setDirection] = useState('right');
 
   const handlePrevPage = () => {
-    setCurrentPage((prev) => Math.max(0, prev - 1));
+    if (currentIndex > 0) {
+      setDirection('left');
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => prev - 1);
+        setIsTransitioning(false);
+      }, 300);
+    }
   };
 
   const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+    if (currentIndex < strategies.length - 1) {
+      setDirection('right');
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => prev + 1);
+        setIsTransitioning(false);
+      }, 300);
+    }
   };
 
   return (
@@ -65,36 +74,33 @@ const StrategySelector = ({ onStrategySelect }) => {
       display: 'flex', 
       flexDirection: 'column', 
       alignItems: 'center',
-      minHeight: '100vh',
-      pt: '228px', // Top spacing as specified
+      py: 4,
     }}>
-      {/* Main Heading */}
       <Typography
         variant="h1"
         sx={{
           fontFamily: 'Plus Jakarta Sans',
           fontWeight: 700,
-          fontSize: '70px',
+          fontSize: '48px',
           lineHeight: '100%',
           letterSpacing: '0%',
           textAlign: 'center',
-          mb: 8,
+          mb: 6,
         }}
       >
         Choose a Strategy
       </Typography>
 
-      {/* Strategy Cards Container */}
       <Box sx={{ 
         display: 'flex', 
         alignItems: 'center',
-        gap: 4,
+        gap: 3,
         position: 'relative',
+        overflow: 'hidden',
       }}>
-        {/* Left Arrow */}
         <IconButton
           onClick={handlePrevPage}
-          disabled={currentPage === 0}
+          disabled={currentIndex === 0}
           sx={{
             color: 'primary.main',
             '&:disabled': {
@@ -105,42 +111,64 @@ const StrategySelector = ({ onStrategySelect }) => {
           <LeftArrowIcon fontSize="large" />
         </IconButton>
 
-        {/* Strategy Cards */}
-        <Grid container spacing={4} sx={{ maxWidth: '800px' }}>
-          {currentStrategies.map((strategy) => (
-            <Grid item key={strategy.id}>
-              <StyledCard onClick={() => onStrategySelect(strategy)}>
-                <CardContent sx={{ 
-                  height: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  p: 4,
-                }}>
-                  <Typography
-                    variant="h4"
-                    sx={{
-                      fontFamily: 'Plus Jakarta Sans',
-                      fontWeight: 700,
-                      fontSize: '32px',
-                      lineHeight: '100%',
-                      letterSpacing: '0%',
-                      textAlign: 'center',
-                    }}
-                  >
-                    {strategy.name}
-                  </Typography>
-                </CardContent>
-              </StyledCard>
-            </Grid>
-          ))}
-        </Grid>
+        <Box sx={{ 
+          width: '280px',
+          height: '320px',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          <Box
+            sx={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              transition: 'transform 0.3s ease-in-out',
+              transform: isTransitioning 
+                ? `translateX(${direction === 'right' ? '-100%' : '100%'})`
+                : 'translateX(0)',
+            }}
+          >
+            <StyledCard onClick={() => onStrategySelect(strategies[currentIndex])}>
+              <CardContent sx={{ 
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                p: 3,
+              }}>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    fontFamily: 'Plus Jakarta Sans',
+                    fontWeight: 700,
+                    fontSize: '24px',
+                    lineHeight: '120%',
+                    letterSpacing: '0%',
+                    textAlign: 'center',
+                    mb: 2,
+                  }}
+                >
+                  {strategies[currentIndex].name}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  sx={{
+                    color: 'grey.500',
+                    fontSize: '14px',
+                    lineHeight: '150%',
+                    textAlign: 'center',
+                  }}
+                >
+                  {strategies[currentIndex].description}
+                </Typography>
+              </CardContent>
+            </StyledCard>
+          </Box>
+        </Box>
 
-        {/* Right Arrow */}
         <IconButton
           onClick={handleNextPage}
-          disabled={currentPage >= totalPages - 1}
+          disabled={currentIndex >= strategies.length - 1}
           sx={{
             color: 'primary.main',
             '&:disabled': {

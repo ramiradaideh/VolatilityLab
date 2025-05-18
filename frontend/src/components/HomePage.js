@@ -102,6 +102,13 @@ const HomePage = () => {
           <ComingSoonButton>
             Deployment
           </ComingSoonButton>
+          
+          <StyledButton
+            variant="contained"
+            onClick={() => navigate('/dashboard')}
+          >
+            Dashboard
+          </StyledButton>
         </Box>
       </Container>
     </Box>

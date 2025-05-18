@@ -10,6 +10,7 @@ import ResultsDisplay from './components/ResultsDisplay';
 import { Container, Box, Typography, IconButton } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import { useNavigate } from 'react-router-dom';
+import Dashboard from './components/Dashboard';
 
 const theme = createTheme({
   palette: {
@@ -111,6 +112,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/backtest" element={<BacktestPage />} />
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>

@@ -1,250 +1,269 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Box,
+  Drawer,
+
+  List,
+  Typography,
+  Divider,
+  IconButton,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Card,
+  CardContent,
+  Grid,
   TextField,
+  InputAdornment,
+  Avatar,
+  Badge,
   Button,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
-  Grid,
-  Paper,
-  Typography,
-  Fade,
-  Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
 } from '@mui/material';
-import { DatePicker } from '@mui/x-date-pickers';
-import axios from 'axios';
-import strategyDescriptions from '../data/strategyDescriptions';
+import {
+  Home as HomeIcon,
+  ShowChart as TradeIcon,
+  Assessment as PerformanceIcon,
+  Article as NewsIcon,
+  Settings as SettingsIcon,
+  Search as SearchIcon,
+  Notifications as NotificationsIcon,
+} from '@mui/icons-material';
+import { styled } from '@mui/material/styles';
+import { useNavigate } from 'react-router-dom';
 
-// Use environment variable for API URL, fallback to localhost for development
-const API_URL = process.env.REACT_APP_API_URL ;
+// Styled components
+const drawerWidth = 240;
 
-function BacktestForm() {
-  const [symbol, setSymbol] = useState('');
+const StyledDrawer = styled(Drawer)(({ theme }) => ({
+  width: drawerWidth,
+  flexShrink: 0,
+  '& .MuiDrawer-paper': {
+    width: drawerWidth,
+    boxSizing: 'border-box',
+    backgroundColor: theme.palette.background.default,
+    borderRight: `1px solid ${theme.palette.divider}`,
+  },
+}));
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  backgroundColor: theme.palette.grey[900],
+  borderRadius: '12px',
+  height: '100%',
+  transition: 'transform 0.2s',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+  },
+}));
+
+const BacktestPage = () => {
+  const [activeItem, setActiveItem] = useState('Trade');
+  const navigate = useNavigate();
   const [strategy, setStrategy] = useState('');
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
-  const [strategies, setStrategies] = useState({});
-  const [loading, setLoading] = useState(false);
-  
-  // Form step states
-  const [showStockPicker, setShowStockPicker] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  
-  // Results state
-  const [results, setResults] = useState(null);
-  const [error, setError] = useState(null);
-  
-  // Get today's date for max date validation
-  const today = new Date();
+  const [symbol, setSymbol] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
-  useEffect(() => {
-    // Fetch available strategies
-    const fetchStrategies = async () => {
-      try {
-        const response = await axios.get(`${API_URL}/backtest/strategies`);
-        setStrategies(response.data.strategies);
-      } catch (error) {
-        console.error('Error fetching strategies:', error);
-      }
-    };
+  const menuItems = [
+    { text: 'Home', icon: <HomeIcon />, notifications: 0, path: '/dashboard' },
+    { text: 'Trade', icon: <TradeIcon />, notifications: 2, path: '/backtest' },
+    { text: 'Performance', icon: <PerformanceIcon />, notifications: 0, path: '/performance' },
+    { text: 'News', icon: <NewsIcon />, notifications: 3, path: '/news' },
+    { text: 'Settings', icon: <SettingsIcon />, notifications: 0, path: '/settings' },
+  ];
 
-    fetchStrategies();
-  }, []);
-
-  // Handle strategy selection
-  const handleStrategyChange = (e) => {
-    setStrategy(e.target.value);
-    setShowStockPicker(true);
-    setShowDatePicker(false); // Reset date picker visibility
-    setResults(null); // Clear previous results
-    setError(null); // Clear previous errors
-  };
-
-  // Handle symbol selection
-  const handleSymbolChange = (e) => {
-    // Convert to uppercase
-    const uppercaseSymbol = e.target.value.toUpperCase();
-    setSymbol(uppercaseSymbol);
-    setShowDatePicker(true);
-    setResults(null); // Clear previous results
-    setError(null); // Clear previous errors
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setResults(null);
-    setError(null);
-
-    try {
-      const response = await axios.post(`${API_URL}/backtest/run`, {
-        symbol,
-        strategy_name: strategy,
-        start_date: startDate,
-        end_date: endDate,
-        parameters: {}, // Add strategy-specific parameters here
-      });
-
-      // Set the results
-      setResults(response.data);
-    } catch (error) {
-      console.error('Error running backtest:', error);
-      setError(error.response?.data?.detail || 'An error occurred while running the backtest');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Format percentage values
-  const formatPercentage = (value) => {
-    return `${(value * 100).toFixed(2)}%`;
+  const handleNavigation = (item) => {
+    setActiveItem(item.text);
+    navigate(item.path);
   };
 
   return (
-    <>
-      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h5" gutterBottom align="center">
-          Backtest Configuration
-        </Typography>
-        
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
-            {/* Step 1: Strategy Selection */}
-            <Grid item xs={12}>
-              <FormControl fullWidth required>
-                <InputLabel>Select Strategy</InputLabel>
-                <Select
-                  value={strategy}
-                  label="Select Strategy"
-                  onChange={handleStrategyChange}
-                >
-                  {Object.entries(strategies).map(([key, displayName]) => (
-                    <MenuItem key={key} value={key}>
-                      {displayName}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            {/* Strategy Description */}
-            {strategy && (
-              <Grid item xs={12}>
-                <Typography variant="body2" color="textSecondary">
-                  {strategyDescriptions[strategy] || "No description available"}
-                </Typography>
-              </Grid>
-            )}
-            
-            {/* Step 2: Stock Symbol */}
-            <Fade in={showStockPicker}>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  label="Stock Symbol"
-                  value={symbol}
-                  onChange={handleSymbolChange}
-                  required
-                  placeholder="Enter stock symbol (e.g., AAPL)"
-                  inputProps={{ style: { textTransform: 'uppercase' } }}
-                />
-              </Grid>
-            </Fade>
-            
-            {/* Step 3: Date Selection */}
-            <Fade in={showDatePicker}>
-              <Grid item xs={12} sm={6}>
-                <DatePicker
-                  label="Start Date"
-                  value={startDate}
-                  onChange={setStartDate}
-                  maxDate={today}
-                  renderInput={(params) => <TextField {...params} fullWidth required />}
-                />
-              </Grid>
-            </Fade>
-            
-            <Fade in={showDatePicker}>
-              <Grid item xs={12} sm={6}>
-                <DatePicker
-                  label="End Date"
-                  value={endDate}
-                  onChange={setEndDate}
-                  maxDate={today}
-                  minDate={startDate}
-                  renderInput={(params) => <TextField {...params} fullWidth required />}
-                />
-              </Grid>
-            </Fade>
-            
-            {/* Submit Button */}
-            <Grid item xs={12}>
-              <Box display="flex" justifyContent="center">
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  size="large"
-                  disabled={loading || !strategy || !symbol || !startDate || !endDate}
-                >
-                  {loading ? 'Running Backtest...' : 'Run Backtest'}
-                </Button>
-              </Box>
-            </Grid>
-          </Grid>
-        </form>
-      </Paper>
-
-      {/* Display error if any */}
-      {error && (
-        <Alert severity="error" sx={{ mb: 4 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Display results if available */}
-      {results && (
-        <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-          <Typography variant="h5" gutterBottom align="center">
-            Backtest Results for {results.symbol}
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+      {/* Sidebar */}
+      <StyledDrawer variant="permanent">
+        <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Avatar
+            sx={{ width: 80, height: 80, mb: 2 }}
+            src="/icon.png"
+            alt="User Profile"
+          />
+          <Typography variant="h6" color="primary" gutterBottom>
+            VolatilityLab
           </Typography>
-          
-          <Alert severity="success" sx={{ mb: 3 }}>
-            Backtest was successful!
-          </Alert>
-          
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Strategy</TableCell>
-                  <TableCell>Total Return</TableCell>
-                  <TableCell>Sharpe Ratio</TableCell>
-                  <TableCell>Max Drawdown</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow>
-                  <TableCell>{results.strategy_display_name}</TableCell>
-                  <TableCell>{formatPercentage(results.total_return)}</TableCell>
-                  <TableCell>{results.sharpe_ratio.toFixed(2)}</TableCell>
-                  <TableCell>{formatPercentage(results.max_drawdown)}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Paper>
-      )}
-    </>
-  );
-}
+        </Box>
+        <Divider />
+        <List>
+          {menuItems.map((item) => (
+            <ListItem
+              button
+              key={item.text}
+              onClick={() => handleNavigation(item)}
+              sx={{
+                backgroundColor: activeItem === item.text ? 'rgba(0, 255, 157, 0.1)' : 'transparent',
+                '&:hover': {
+                  backgroundColor: 'rgba(0, 255, 157, 0.05)',
+                },
+              }}
+            >
+              <ListItemIcon sx={{ color: activeItem === item.text ? 'primary.main' : 'grey.500' }}>
+                <Badge badgeContent={item.notifications} color="primary">
+                  {item.icon}
+                </Badge>
+              </ListItemIcon>
+              <ListItemText 
+                primary={item.text}
+                sx={{ color: activeItem === item.text ? 'primary.main' : 'grey.500' }}
+              />
+            </ListItem>
+          ))}
+        </List>
+      </StyledDrawer>
 
-export default BacktestForm; 
+      {/* Main Content */}
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        {/* Top Bar */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+          <TextField
+            placeholder="Search..."
+            variant="outlined"
+            size="small"
+            sx={{
+              width: '300px',
+              '& .MuiOutlinedInput-root': {
+                backgroundColor: 'grey.900',
+                '& fieldset': {
+                  borderColor: 'grey.700',
+                },
+                '&:hover fieldset': {
+                  borderColor: 'primary.main',
+                },
+              },
+            }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+              ),
+            }}
+          />
+          <Box>
+            <IconButton color="primary">
+              <Badge badgeContent={4} color="primary">
+                <NotificationsIcon />
+              </Badge>
+            </IconButton>
+            <IconButton color="primary">
+              <SettingsIcon />
+            </IconButton>
+          </Box>
+        </Box>
+
+        {/* Backtesting Section */}
+        <Typography variant="h4" gutterBottom sx={{ mb: 4 }}>
+          Backtesting
+        </Typography>
+
+        {/* Backtesting Form */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} md={6}>
+            <StyledCard>
+              <CardContent>
+                <Typography variant="h6" color="grey.500" gutterBottom>
+                  Strategy Configuration
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <FormControl fullWidth>
+                      <InputLabel>Strategy</InputLabel>
+                      <Select
+                        value={strategy}
+                        onChange={(e) => setStrategy(e.target.value)}
+                        label="Strategy"
+                      >
+                        <MenuItem value="sma">Simple Moving Average</MenuItem>
+                        <MenuItem value="rsi">RSI</MenuItem>
+                        <MenuItem value="momentum">Momentum Regression</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      label="Symbol"
+                      value={symbol}
+                      onChange={(e) => setSymbol(e.target.value)}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      fullWidth
+                      label="Start Date"
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <TextField
+                      fullWidth
+                      label="End Date"
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      InputLabelProps={{ shrink: true }}
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      fullWidth
+                      sx={{ mt: 2 }}
+                    >
+                      Run Backtest
+                    </Button>
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </StyledCard>
+          </Grid>
+          <Grid item xs={12} md={6}>
+            <StyledCard>
+              <CardContent>
+                <Typography variant="h6" color="grey.500" gutterBottom>
+                  Results
+                </Typography>
+                {/* Results will be displayed here */}
+              </CardContent>
+            </StyledCard>
+          </Grid>
+        </Grid>
+
+        {/* Footer Status */}
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: drawerWidth,
+            right: 0,
+            p: 2,
+            backgroundColor: 'grey.900',
+            borderTop: '1px solid',
+            borderColor: 'divider',
+          }}
+        >
+          <Typography variant="body2" color="grey.500">
+            Next Steps: Configure your strategy and run the backtest
+          </Typography>
+        </Box>
+      </Box>
+    </Box>
+  );
+};
+
+export default BacktestPage; 

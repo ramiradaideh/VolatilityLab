@@ -21,7 +21,6 @@ import {
   Home as HomeIcon,
   ShowChart as TradeIcon,
   Assessment as PerformanceIcon,
-  Timeline as BacktestIcon,
   Settings as SettingsIcon,
   Search as SearchIcon,
   Notifications as NotificationsIcon,
@@ -58,10 +57,9 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const menuItems = [
-    { text: 'Home', icon: <HomeIcon />, notifications: 0, path: '/dashboard' },
-    { text: 'Trade', icon: <TradeIcon />, notifications: 2, path: '/trade' },
+    { text: 'Home', icon: <HomeIcon />, notifications: 0, path: '/' },
+    { text: 'Trade', icon: <TradeIcon />, notifications: 2, path: '/backtest' },
     { text: 'Performance', icon: <PerformanceIcon />, notifications: 0, path: '/performance' },
-    { text: 'Backtesting', icon: <BacktestIcon />, notifications: 1, path: '/backtest' },
     { text: 'Settings', icon: <SettingsIcon />, notifications: 0, path: '/settings' },
   ];
 

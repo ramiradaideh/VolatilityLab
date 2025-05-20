@@ -2,45 +2,46 @@
  * Strategy data with descriptions and metadata
  */
 const STRATEGIES = [
-  { 
-    id: 1, 
-    name: 'Simple Moving Average',
-    description: 'A trend-following strategy that generates signals based on the crossing of short and long-term moving averages.',
-    type: 'trend-following',
-    complexity: 'beginner',
-    bestFor: 'trending markets',
+  {
+    id: "simple_moving_average",
+    name: "Simple Moving Average",
     bulletPoints: [
-      'Short term',
-      'Day to Day',
-      'Algorithm learns as it goes'
+      "Trend-following strategy",
+      "Buy when short SMA crosses above long SMA",
+      "Sell when short SMA crosses below long SMA",
+      "Best for trending markets"
     ]
   },
-  { 
-    id: 2, 
-    name: 'RSI Strategy',
-    description: 'A mean-reversion strategy that identifies overbought and oversold conditions using the Relative Strength Index.',
-    type: 'mean-reversion',
-    complexity: 'intermediate',
-    bestFor: 'range-bound markets',
+  {
+    id: "exponential_moving_average",
+    name: "Exponential Moving Average",
     bulletPoints: [
-      'Longer Term',
-      'Less Risk',
-      'Leave and Forget'
+      "Trend-following strategy with higher responsiveness",
+      "Uses 8 and 20 day EMAs with smoothing factor of 2",
+      "More weight given to recent price movements",
+      "Better for catching trend changes early"
     ]
   },
-  { 
-    id: 3, 
-    name: 'Momentum Regression',
-    description: 'An advanced momentum strategy that uses multiple timeframes and regression analysis for signal generation.',
-    type: 'momentum',
-    complexity: 'advanced',
-    bestFor: 'volatile markets with clear trends',
+  {
+    id: "rsi_strategy",
+    name: "RSI Strategy",
     bulletPoints: [
-      'Medium term',
-      'Moderate Risk',
-      'Requires periodic monitoring'
+      "Mean-reversion strategy",
+      "Buy when RSI falls below oversold level",
+      "Sell when RSI rises above overbought level",
+      "Best for range-bound markets"
     ]
   },
+  {
+    id: "momentum_regression",
+    name: "Momentum Regression",
+    bulletPoints: [
+      "Advanced multi-timeframe strategy",
+      "Uses regression analysis on price movements",
+      "Adapts to market volatility",
+      "Performs well in trending markets with volatility"
+    ]
+  }
 ];
 
 export default STRATEGIES; 

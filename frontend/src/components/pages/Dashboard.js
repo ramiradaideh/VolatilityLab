@@ -18,14 +18,6 @@ const CARD_MIN_HEIGHT = 240;
 const Dashboard = () => {
   return (
     <MainLayout>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h3" sx={{ mb: 1, fontWeight: 600 }}>
-          Dashboard
-        </Typography>
-        <Typography variant="subtitle1" sx={{ color: 'text.secondary' }}>
-          Overview of your trading performance and statistics
-        </Typography>
-      </Box>
 
       <Grid container spacing={3}>
         {/* Performance Summary Card */}

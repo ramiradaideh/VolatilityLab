@@ -16,6 +16,7 @@ class BacktestService:
     def __init__(self):
         self.strategies = {
             "simple_moving_average": self.simple_moving_average_strategy,
+            "exponential_moving_average": self.exponential_moving_average_strategy,
             "rsi_strategy": self.rsi_strategy,
             "momentum_regression": self.momentum_regression_strategy,
         }
@@ -23,6 +24,7 @@ class BacktestService:
         # Add display names for each strategy
         self.strategy_display_names = {
             "simple_moving_average": "Simple Moving Average",
+            "exponential_moving_average": "Exponential Moving Average",
             "rsi_strategy": "RSI Strategy",
             "momentum_regression": "Momentum Regression",
         }
@@ -123,6 +125,36 @@ class BacktestService:
         except Exception as e:
             logger.exception("SMA strategy failed")
             raise ValueError(f"SMA strategy failed: {str(e)}")
+
+    def exponential_moving_average_strategy(self, df: pd.DataFrame, parameters: Dict[str, Any]) -> pd.Series:
+        try:
+            short = parameters.get('short_window', 8)
+            long = parameters.get('long_window', 20)
+            smoothing = parameters.get('smoothing', 2)
+            logger.info(f"Running EMA strategy: short={short}, long={long}, smoothing={smoothing}")
+
+            if len(df) < long:
+                logger.error(f"Not enough data points for EMA strategy. Need at least {long} points, got {len(df)}")
+                raise ValueError(f"Not enough data points for EMA strategy. Need at least {long} points")
+
+            # Calculate alpha for EMA based on smoothing factor
+            # Alpha = smoothing/(1+days)
+            short_alpha = smoothing / (1 + short)
+            long_alpha = smoothing / (1 + long)
+            
+            # Calculate EMAs with explicit alpha values
+            df['EMA_short'] = df['close'].ewm(alpha=short_alpha, adjust=False).mean()
+            df['EMA_long'] = df['close'].ewm(alpha=long_alpha, adjust=False).mean()
+
+            signals = pd.Series(0, index=df.index)
+            signals[df['EMA_short'] > df['EMA_long']] = 1  # Buy signal when short EMA crosses above long EMA
+            signals[df['EMA_short'] < df['EMA_long']] = -1  # Sell signal when short EMA crosses below long EMA
+
+            logger.debug("EMA signals generated")
+            return signals.fillna(0)
+        except Exception as e:
+            logger.exception("EMA strategy failed")
+            raise ValueError(f"EMA strategy failed: {str(e)}")
 
     def calculate_rsi(self, prices: pd.Series, period: int = 14) -> pd.Series:
         delta = prices.diff()

@@ -17,7 +17,6 @@ import STRATEGIES from '../../../data/strategies';
 // Constants for styling and animation
 const CARD_WIDTH = 280;
 const CARD_HEIGHT = 420;
-const CIRCLE_SIZE = 100;
 const HEADING_FONT_SIZE = 64;
 const STRATEGY_TITLE_FONT_SIZE = 28;
 const DESCRIPTION_FONT_SIZE = 15;
@@ -61,6 +60,10 @@ const StrategyTitle = styled(Typography)({
   letterSpacing: '0%',
   textAlign: 'center',
   marginBottom: '16px',
+  height: '67px', // Fixed height to ensure alignment
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 });
 
 const DescriptionText = styled(Typography)(({ theme }) => ({
@@ -68,17 +71,6 @@ const DescriptionText = styled(Typography)(({ theme }) => ({
   fontSize: `${DESCRIPTION_FONT_SIZE}px`,
   lineHeight: '145%',
   marginBottom: '6px',
-}));
-
-const CircleIcon = styled(Box)(({ theme }) => ({
-  width: `${CIRCLE_SIZE}px`,
-  height: `${CIRCLE_SIZE}px`,
-  borderRadius: '50%',
-  border: `2px solid ${theme.palette.primary.main}`,
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  margin: '0 auto 20px',
 }));
 
 const ConfirmButton = styled(Button)(({ theme }) => ({
@@ -218,9 +210,8 @@ const StrategySelector = ({ onStrategySelect }) => {
                   display: 'flex',
                   flexDirection: 'column',
                   p: 3,
+                  pt: 4, // Added padding at the top to compensate for removed circle
                 }}>
-                  <CircleIcon />
-                  
                   <StrategyTitle>
                     {strategy.name}
                   </StrategyTitle>

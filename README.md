@@ -1,26 +1,18 @@
-# VolatilityLab
+
+<p align="center">
+  <img src="frontend/public/icon.png" alt="VolatilityLab Logo" width="200">
+</p>
 
 A quantum trading platform for backtesting trading strategies on stocks and options.
 
+
 ## Features
 
-- Backtesting framework for trading strategies
-- Integration with Polygon.io for market data
-- Simple web interface for strategy selection and performance analysis
-- Docker support for easy deployment
+- Simple web interface for backtesting and deploying strategies
+- Explore a wide list of implemented strategies
+- Currently supporting Alpaca API
 
-## Tech Stack
 
-### Backend
-- Python 3.11
-- FastAPI
-- SQLite
-- Polygon.io API
-
-### Frontend
-- React
-- Material-UI
-- Axios for API calls
 
 ## Getting Started
 
@@ -75,6 +67,7 @@ npm start
 Create a `.env` file in the backend directory with:
 ```
 POLYGON_API_KEY=your_api_key_here
+ALPACA_API_KEY=your_api_key_here
 ```
 
 ## License

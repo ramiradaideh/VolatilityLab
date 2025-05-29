@@ -24,7 +24,7 @@ const STRATEGIES = [
   },
   {
     id: "rsi_strategy",
-    name: "RSI Strategy",
+    name: "Relative Strength Index",
     bulletPoints: [
       "Mean-reversion strategy",
       "Buy when RSI falls below oversold level",
